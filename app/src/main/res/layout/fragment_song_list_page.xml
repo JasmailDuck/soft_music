@@ -48,10 +48,13 @@
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/song_recycler"
-        android:layout_width="409dp"
+        android:layout_width="match_parent"
         android:layout_height="666dp"
+
+        android:overScrollMode="never"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/sub_text_holder_song" />
+        app:layout_constraintTop_toBottomOf="@+id/sub_text_holder_song"
+        />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

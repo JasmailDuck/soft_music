@@ -2,6 +2,9 @@ package com.softwind.softmusic;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.net.Uri;
+import android.provider.MediaStore;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -10,6 +13,11 @@ import android.widget.TextView;
 
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.squareup.picasso.Picasso;
+
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.OutputStream;
 import java.util.List;
 
 public class SongRecycler extends RecyclerView.Adapter<SongRecycler.ViewHolder> {
@@ -40,7 +48,7 @@ public class SongRecycler extends RecyclerView.Adapter<SongRecycler.ViewHolder> 
     public void onBindViewHolder(ViewHolder holder, int position) {
         Bitmap art = songImage.get(position);
         String text = songName.get(position);
-        holder.myView.setImageBitmap(art);
+        loadBitmapByPicasso(mInflater.getContext(),art,holder.myView);
         holder.myTextView.setText(text);
     }
 
@@ -81,5 +89,24 @@ public class SongRecycler extends RecyclerView.Adapter<SongRecycler.ViewHolder> 
     // parent activity will implement this method to respond to click events
     public interface ItemClickListener {
         void onItemClick(View view, int position);
+    }
+
+    public Uri getImageUri(Context inContext, Bitmap inImage) {
+        ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+        inImage.compress(Bitmap.CompressFormat.JPEG, 100, bytes);
+        String path = MediaStore.Images.Media.insertImage(inContext.getContentResolver(), inImage, "Title", null);
+        return Uri.parse(path);
+    }
+
+    private void loadBitmapByPicasso(Context pContext, Bitmap pBitmap, ImageView pImageView) {
+        try {
+            Uri uri = Uri.fromFile(File.createTempFile("temp_file_name", ".jpg", pContext.getCacheDir()));
+            OutputStream outputStream = pContext.getContentResolver().openOutputStream(uri);
+            pBitmap.compress(Bitmap.CompressFormat.JPEG, 100, outputStream);
+            outputStream.close();
+            Picasso.get().load(uri).fit().into(pImageView);
+        } catch (Exception e) {
+            Picasso.get().load(R.drawable.ic_launcher_background).fit().into(pImageView);
+        }
     }
 }

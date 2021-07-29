@@ -20,7 +20,7 @@ import java.util.List;
  * A simple {@link Fragment} subclass.
  * create an instance of this fragment.
  */
-public class songFrag extends Fragment implements SongRecycler.ItemClickListener {
+public class songFrag extends Fragment implements SongRecycler.ItemClickListener  {
 
     //Stores the adapter
     private SongRecycler adapter;
@@ -63,15 +63,19 @@ public class songFrag extends Fragment implements SongRecycler.ItemClickListener
 
         View view = inflater.inflate(R.layout.fragment_song_list_page, container, false);
         recyclerView = view.findViewById(R.id.song_recycler);
+
         LinearLayoutManager verticalManager = new LinearLayoutManager(getContext(),LinearLayoutManager.VERTICAL,false);
         recyclerView.setLayoutManager(verticalManager);
+
         adapter = new SongRecycler(getContext(),image,text);
         adapter.setClickListener(this);
+        adapter.setHasStableIds(true);
         recyclerView.setAdapter(adapter);
 
         // Inflate the layout for this fragment
         return view;
     }
+
 
     @Override
     public void onItemClick(View view, int position) {

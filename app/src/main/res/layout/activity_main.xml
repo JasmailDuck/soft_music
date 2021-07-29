@@ -5,7 +5,10 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     app:layoutDescription="@xml/activity_main_scene"
-    tools:context=".MainActivity">
+    tools:context=".MainActivity"
+    android:focusable="true"
+    android:focusableInTouchMode="true"
+    >
 
     <View
         android:id="@+id/title_bar_container_home"
@@ -28,20 +31,21 @@
         app:layout_constraintTop_toTopOf="@+id/title_bar_container_home" />
 
 
-
     <androidx.fragment.app.FragmentContainerView
         android:id="@+id/home_content_fragment_container"
         android:name="com.softwind.softmusic.HomeContent"
         android:layout_width="match_parent"
         android:layout_height="500dp"
+        app:layout_constraintBottom_toTopOf="@+id/music_player_widget"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-
         app:layout_constraintTop_toBottomOf="@+id/title_bar_container_home"
+
         tools:layout="@layout/fragment_home_content" />
 
 
     <View
+
         android:id="@+id/music_player_widget"
         android:layout_width="match_parent"
         android:layout_height="140dp"

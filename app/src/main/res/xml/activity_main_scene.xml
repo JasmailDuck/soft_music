@@ -8,23 +8,15 @@
         motion:constraintSetStart="@id/start"
         motion:duration="200"
         motion:motionInterpolator="cubic(0.4,0,0.39,1)"
-        motion:pathMotionArc="none">
+        motion:pathMotionArc="none"
+        motion:layoutDuringTransition="honorRequest">
        <KeyFrameSet>
            <KeyAttribute android:scaleY="1.2" />
-           <KeyAttribute />
-           <KeyTrigger />
-           <KeyTrigger />
-           <KeyTrigger />
-           <KeyTrigger motion:onCross="@android:string/VideoView_error_text_invalid_progressive_playback" />
+
        </KeyFrameSet>
         <OnClick motion:targetId="@+id/album_art_player" />
-        <OnSwipe motion:touchAnchorId="@+id/music_player_widget" />
-        <OnSwipe motion:touchAnchorId="@+id/music_player_widget" />
-        <OnSwipe motion:touchAnchorId="@+id/music_player_widget" />
-        <OnSwipe motion:touchAnchorId="@+id/music_player_widget" />
-        <OnSwipe motion:touchAnchorId="@+id/music_player_widget" />
-        <OnSwipe motion:touchAnchorId="@+id/music_player_widget" />
-        <OnSwipe motion:touchAnchorId="@+id/music_player_widget" />
+
+
 
     </Transition>
 
@@ -47,6 +39,14 @@
             android:layout_marginBottom="1dp"
             android:visibility="invisible"
             motion:layout_constraintStart_toStartOf="parent" />
+        <Constraint
+            android:layout_height="500dp"
+            motion:layout_constraintStart_toStartOf="parent"
+            motion:layout_constraintBottom_toTopOf="@+id/music_player_widget"
+            motion:layout_constraintEnd_toEndOf="parent"
+            android:layout_width="match_parent"
+            motion:layout_constraintTop_toBottomOf="@+id/title_bar_container_home"
+            android:id="@+id/home_content_fragment_container" />
     </ConstraintSet>
 
     <ConstraintSet android:id="@+id/end">
@@ -60,10 +60,11 @@
         <Constraint
             android:id="@+id/title_bar_container_home"
             motion:layout_constraintEnd_toEndOf="parent"
-            android:layout_width="wrap_content"
-            android:layout_height="1dp"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
             motion:layout_constraintTop_toTopOf="parent"
-            motion:layout_constraintStart_toStartOf="parent" />
+            motion:layout_constraintStart_toStartOf="parent"
+            android:visibility="gone" />
         <Constraint
             android:id="@+id/app_title"
             android:layout_width="wrap_content"
