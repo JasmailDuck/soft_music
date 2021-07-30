@@ -16,7 +16,9 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.view.View;
+import android.widget.ImageButton;
 import android.widget.SeekBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.makeramen.roundedimageview.RoundedImageView;
@@ -30,10 +32,10 @@ import java.util.List;
 
 /**
  * Main class
- * @author jasmailduck
  *
+ * @author jasmailduck
  */
-public class MainActivity extends AppCompatActivity{
+public class MainActivity extends AppCompatActivity {
 
     //-------DATA-----------//
 
@@ -64,6 +66,8 @@ public class MainActivity extends AppCompatActivity{
 
     private MediaPlayer mediaPlayer;
 
+    private int indexOfSong;
+
     //------------VIEWS & ADAPTERS-------------//
 
     //Holds the main screen fragment view
@@ -72,21 +76,38 @@ public class MainActivity extends AppCompatActivity{
     //Holds the imageview of the album art in the music player
     private RoundedImageView album;
 
+    //Stores the seekbar view
     SeekBar seekBar;
 
+    //Runnable needed for updating the seekbar
     Runnable runnable;
 
+    //E
     Handler handler;
 
-    //--------------------PRIVATE METHODS--------------------//
+    //Stores the next track button
+    ImageButton nextTrack;
 
+    //Stores the play pause button
+    ImageButton playPause;
+
+    //Stores the back button
+    ImageButton previousTrack;
+
+    TextView songTextView;
+
+    TextView artistTextView;
+
+
+
+    //--------------------PRIVATE METHODS--------------------//
 
 
     /**
      * Simple method to control the fragment view
      * @param fragment
      */
-    private void fragmentManger(Fragment fragment){
+    private void fragmentManger(Fragment fragment) {
         getSupportFragmentManager().beginTransaction().replace(R.id.home_content_fragment_container, fragment).commitNow();
     }
 
@@ -135,7 +156,8 @@ public class MainActivity extends AppCompatActivity{
     }
 
     /**
-     * Extracts the metadata from the song, if there aren't any for some files, a default theme is applied.
+     * Extracts the metadata from the song, if there aren't any for some files, a default theme
+     * is applied.
      */
     private void metadataExtraction() {
         for (int i = 0; i < listOfSongPaths.size(); i++) {
@@ -173,6 +195,12 @@ public class MainActivity extends AppCompatActivity{
         }
     }
 
+    /**
+     * A custom string formatter. Formats the string to hardcoded requirments.
+     * May need some tuning but not the biggest priority.
+     * @param songName
+     * @return
+     */
     private String formatSongName(String songName) {
         int numDigits = 0;
         String result = "";
@@ -194,37 +222,74 @@ public class MainActivity extends AppCompatActivity{
     }
 
 
-
+    /**
+     * Basically the method that gets called when an activity gets launched.
+     * Responsible for initializing and starting other methods
+     * @param savedInstanceState
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        //-----------DEFAULT ANDROID STUFF--------//
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        permissionHandler();
-
+        //-----------INITIALIZERS----------//
+        handler = new Handler();
+        seekBar = findViewById(R.id.music_seeker);
+        nextTrack = findViewById(R.id.next_track_button);
+        playPause = findViewById(R.id.play_button);
+        previousTrack = findViewById(R.id.back_track_button);
         listOfSongPaths = findSongs(Environment.getExternalStorageDirectory().getAbsolutePath());
-
-        metadataExtraction();
-
-        //Initialize the views
         album = findViewById(R.id.album_art_player);
+        songTextView = findViewById(R.id.song_name_player);
+        artistTextView = findViewById(R.id.artist_name_player);
 
-
-
+        //-------------METHODS--------------//
+        permissionHandler();
+        metadataExtraction();
         fragmentManger(HOME_FRAG);
 
-        album.setImageResource(R.drawable.missing_art);
 
-        handler = new Handler();
+        //-------------LISTENERS------------//
+        nextTrack.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (mediaPlayer != null) {
+                    next(indexOfSong);
+                }
 
-        seekBar = findViewById(R.id.music_seeker);
+            }
+        });
+        playPause.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (mediaPlayer != null) {
+                    if (mediaPlayer.isPlaying()) {
+                        mediaPlayer.pause();
+                    } else {
+                        mediaPlayer.start();
+                    }
+                }
 
+            }
+        });
+        previousTrack.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (mediaPlayer != null) {
+                    back(indexOfSong);
+                }
+            }
+        });
         seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 if (fromUser) {
-                    mediaPlayer.seekTo(progress);
-                    seekBar.setProgress(progress);
+                    if (mediaPlayer != null) {
+                        mediaPlayer.seekTo(progress);
+                        seekBar.setProgress(progress);
+                    }
+
                 }
             }
 
@@ -239,16 +304,18 @@ public class MainActivity extends AppCompatActivity{
             }
         });
 
+        //-------TEMP OR TESTING-----------//
+        album.setImageResource(R.drawable.missing_art);
 
     }
 
-    public void setMediaPlayerInfo(int position){
-        loadBitmapByPicasso(this, ListOfSongs.listOfSongs.get(position).getArt(), album);
-        Toast.makeText(this,"Imagae No", Toast.LENGTH_SHORT).show();
-    }
-
-
-
+    /**
+     * Converts a bitmap image to a {@link Uri} reference.
+     * Loads the image to the respected Image View container
+     * @param pContext
+     * @param pBitmap
+     * @param pImageView
+     */
     private void loadBitmapByPicasso(Context pContext, Bitmap pBitmap, RoundedImageView pImageView) {
         try {
 
@@ -262,9 +329,27 @@ public class MainActivity extends AppCompatActivity{
         }
     }
 
+    //------------------PUBLIC METHODS-----------------------//
 
-    public  void playMedia(Context context, int position){
-        if (mediaPlayer != null){
+    /**
+     * Loads all the song information on tho the media widget
+     * @param position
+     */
+    public void setMediaPlayerInfo(int position) {
+        loadBitmapByPicasso(this, ListOfSongs.listOfSongs.get(position).getArt(), album);
+        songTextView.setText(ListOfSongs.listOfSongs.get(position).getSongName());
+        artistTextView.setText(ListOfSongs.listOfSongs.get(position).getArtistName());
+
+    }
+
+    /**
+     * Responsible for playing the song
+     * @param context
+     * @param position
+     */
+    public void playMedia(Context context, int position) {
+        indexOfSong = position;
+        if (mediaPlayer != null) {
             mediaPlayer.release();
             mediaPlayer = null;
         }
@@ -285,6 +370,7 @@ public class MainActivity extends AppCompatActivity{
         mediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
             @Override
             public void onPrepared(MediaPlayer mp) {
+                setMediaPlayerInfo(position);
                 seekBar.setMax(mediaPlayer.getDuration());
                 mediaPlayer.start();
                 seekBarUpdater();
@@ -294,18 +380,58 @@ public class MainActivity extends AppCompatActivity{
 
     }
 
-    public void seekBarUpdater(){
-        int currPos = mediaPlayer.getCurrentPosition();
-        seekBar.setProgress(currPos);
+    /**
+     * Responsible for syncing the music player with the seek bar
+     */
+    public void seekBarUpdater() {
+        if (mediaPlayer != null) {
+            int currPos = mediaPlayer.getCurrentPosition();
+            seekBar.setProgress(currPos);
 
-        runnable = new Runnable() {
-            @Override
-            public void run() {
-                seekBarUpdater();
-            }
-        };
+            runnable = new Runnable() {
+                @Override
+                public void run() {
+                    seekBarUpdater();
+                }
+            };
 
-        handler.postDelayed(runnable, 1000);
+            handler.postDelayed(runnable, 1);
+        }
 
+
+    }
+
+    /**
+     * Advances the song to the next
+     * @param pos
+     */
+    private void next(int pos) {
+        try {
+            ListOfSongs.listOfSongs.get(pos + 1);
+            mediaPlayer.release();
+
+            playMedia(this, pos + 1);
+        } catch (Exception e) {
+
+            mediaPlayer.release();
+            mediaPlayer = null;
+        }
+    }
+
+    /**
+     * Goes back o the previous song
+     * @param pos
+     */
+    private void back(int pos) {
+        try {
+            ListOfSongs.listOfSongs.get(pos - 1);
+            mediaPlayer.release();
+
+            playMedia(this, pos - 1);
+        } catch (Exception e) {
+
+            mediaPlayer.release();
+            mediaPlayer = null;
+        }
     }
 }

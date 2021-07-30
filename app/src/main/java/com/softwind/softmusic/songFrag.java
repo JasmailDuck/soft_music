@@ -32,9 +32,24 @@ public class songFrag extends Fragment implements SongRecycler.ItemClickListener
     private List<String> text = new ArrayList<String>();
 
     private void dataLoad(){
-        for(int i = 0; i < ListOfSongs.listOfSongs.size(); i++){
-            image.add(ListOfSongs.listOfSongs.get(i).getArt());
-            text.add(ListOfSongs.listOfSongs.get(i).getSongName());
+        for(int i = 0; i <= ListOfSongs.listOfSongs.size(); i++){
+            if (text.isEmpty()){
+                image.add(ListOfSongs.listOfSongs.get(i).getArt());
+                text.add(ListOfSongs.listOfSongs.get(i).getSongName());
+            } else {
+                try {
+                    if (!text.contains(ListOfSongs.listOfSongs.get(i).getSongName())){
+                        image.add(ListOfSongs.listOfSongs.get(i).getArt());
+                        text.add(ListOfSongs.listOfSongs.get(i).getSongName());
+                    }
+                } catch (Exception e){
+
+                }
+
+            }
+
+
+
         }
     }
 
@@ -54,9 +69,9 @@ public class songFrag extends Fragment implements SongRecycler.ItemClickListener
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-
-
         dataLoad();
+
+
 
 
         View view = inflater.inflate(R.layout.fragment_song_list_page, container, false);
@@ -79,7 +94,7 @@ public class songFrag extends Fragment implements SongRecycler.ItemClickListener
     @Override
     public void onItemClick(View view, int position) {
         ((MainActivity)getActivity()).playMedia(getContext(), position);
-        ((MainActivity)getActivity()).setMediaPlayerInfo(position);
+
         ListOfSongs.recentListOfSongs.add(ListOfSongs.listOfSongs.get(position));
 
     }
