@@ -10,23 +10,35 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.makeramen.roundedimageview.RoundedImageView;
 import com.squareup.picasso.Picasso;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.OutputStream;
 import java.util.List;
 
+/**
+ * Addapter class and Recycle view inflater
+ * @author jasmailduck
+ * @version 1.0
+ */
 public class SongRecycler extends RecyclerView.Adapter<SongRecycler.ViewHolder> {
 
+    //Stores the respective lists of data that the inflater will bind together
     private List<Bitmap> songImage;
     private List<String> songName;
 
+    //Stores the layout inflater
     private LayoutInflater mInflater;
 
+    //Stores the onItemClick listener
     private ItemClickListener mClickListener;
 
     // data is passed into the constructor
@@ -34,6 +46,7 @@ public class SongRecycler extends RecyclerView.Adapter<SongRecycler.ViewHolder> 
         this.mInflater = LayoutInflater.from(context);
         this.songImage = art;
         this.songName = name;
+        Toast.makeText(mInflater.getContext(), "There are" + art.size(),Toast.LENGTH_SHORT).show();
     }
 
     // inflates the row layout from xml when needed
@@ -43,11 +56,12 @@ public class SongRecycler extends RecyclerView.Adapter<SongRecycler.ViewHolder> 
         return new ViewHolder(view);
     }
 
-    // binds the data to the view and textview in each row
+    // binds the data to the imageview and textview in each row
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
         Bitmap art = songImage.get(position);
         String text = songName.get(position);
+
         loadBitmapByPicasso(mInflater.getContext(),art,holder.myView);
         holder.myTextView.setText(text);
     }
@@ -60,7 +74,7 @@ public class SongRecycler extends RecyclerView.Adapter<SongRecycler.ViewHolder> 
 
     // stores and recycles views as they are scrolled off screen
     public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
-        ImageView myView;
+        RoundedImageView myView;
         TextView myTextView;
 
         ViewHolder(View itemView) {
@@ -91,22 +105,18 @@ public class SongRecycler extends RecyclerView.Adapter<SongRecycler.ViewHolder> 
         void onItemClick(View view, int position);
     }
 
-    public Uri getImageUri(Context inContext, Bitmap inImage) {
-        ByteArrayOutputStream bytes = new ByteArrayOutputStream();
-        inImage.compress(Bitmap.CompressFormat.JPEG, 100, bytes);
-        String path = MediaStore.Images.Media.insertImage(inContext.getContentResolver(), inImage, "Title", null);
-        return Uri.parse(path);
-    }
 
-    private void loadBitmapByPicasso(Context pContext, Bitmap pBitmap, ImageView pImageView) {
+
+    private void loadBitmapByPicasso(Context pContext, Bitmap pBitmap, RoundedImageView pImageView) {
         try {
+
             Uri uri = Uri.fromFile(File.createTempFile("temp_file_name", ".jpg", pContext.getCacheDir()));
             OutputStream outputStream = pContext.getContentResolver().openOutputStream(uri);
             pBitmap.compress(Bitmap.CompressFormat.JPEG, 100, outputStream);
             outputStream.close();
-            Picasso.get().load(uri).fit().into(pImageView);
+            Picasso.get().load(uri).fit().placeholder(R.drawable.ic_launcher_background).into(pImageView);
         } catch (Exception e) {
-            Picasso.get().load(R.drawable.ic_launcher_background).fit().into(pImageView);
+            Picasso.get().load(R.drawable.missing_art).fit().into(pImageView);
         }
     }
 }
