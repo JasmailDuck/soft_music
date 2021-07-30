@@ -68,6 +68,7 @@ public class songFrag extends Fragment implements SongRecycler.ItemClickListener
         adapter = new SongRecycler(getContext(),image,text);
         adapter.setClickListener(this);
         adapter.setHasStableIds(true);
+
         recyclerView.setAdapter(adapter);
 
         // Inflate the layout for this fragment
@@ -77,8 +78,8 @@ public class songFrag extends Fragment implements SongRecycler.ItemClickListener
 
     @Override
     public void onItemClick(View view, int position) {
-        MediaHandler.playMedia(getContext(), position);
-
+        ((MainActivity)getActivity()).playMedia(getContext(), position);
+        ((MainActivity)getActivity()).setMediaPlayerInfo(position);
         ListOfSongs.recentListOfSongs.add(ListOfSongs.listOfSongs.get(position));
 
     }

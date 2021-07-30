@@ -7,25 +7,6 @@
     android:layout_height="match_parent"
     tools:context=".songFrag">
 
-    <View
-        android:id="@+id/title_bar_container_song"
-        android:layout_width="wrap_content"
-        android:layout_height="70dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"/>
-
-    <TextView
-        android:id="@+id/title_text_songpage"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-
-        android:paddingTop="20dp"
-        android:paddingStart="20dp"
-        android:textSize="30sp"
-        android:fontFamily="sans-serif-black"
-        app:layout_constraintStart_toStartOf="@+id/title_bar_container_song"
-        app:layout_constraintTop_toTopOf="@+id/title_bar_container_song" />
 
     <View
         android:id="@+id/sub_text_holder_song"
@@ -33,7 +14,7 @@
         android:layout_height="35dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/title_bar_container_song" />
+        app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
         android:id="@+id/songTitle"
@@ -41,17 +22,18 @@
         android:layout_height="wrap_content"
         android:fontFamily="sans-serif-black"
         android:paddingStart="40dp"
+        android:text="Songs"
         android:textSize="20sp"
         app:layout_constraintBottom_toBottomOf="@+id/sub_text_holder_song"
         app:layout_constraintStart_toStartOf="@+id/sub_text_holder_song"
-        app:layout_constraintTop_toBottomOf="@+id/title_bar_container_song" />
+        app:layout_constraintTop_toTopOf="@+id/sub_text_holder_song" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/song_recycler"
         android:layout_width="match_parent"
-        android:layout_height="666dp"
+        android:layout_height="wrap_content"
 
-        android:overScrollMode="never"
+        android:overScrollMode="ifContentScrolls"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/sub_text_holder_song"

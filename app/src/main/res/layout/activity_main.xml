@@ -57,10 +57,10 @@
 
     <com.makeramen.roundedimageview.RoundedImageView
         android:id="@+id/album_art_player"
-        android:layout_width="130dp"
+        android:layout_width="120dp"
         android:layout_height="120dp"
         android:layout_marginLeft="10dp"
-        android:background="@drawable/d"
+
         app:riv_corner_radius="30dp"
         app:riv_mutate_background="true"
         app:layout_constraintBottom_toBottomOf="@+id/music_player_widget"

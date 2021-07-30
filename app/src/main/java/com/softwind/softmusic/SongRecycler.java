@@ -61,7 +61,6 @@ public class SongRecycler extends RecyclerView.Adapter<SongRecycler.ViewHolder> 
     public void onBindViewHolder(ViewHolder holder, int position) {
         Bitmap art = songImage.get(position);
         String text = songName.get(position);
-
         loadBitmapByPicasso(mInflater.getContext(),art,holder.myView);
         holder.myTextView.setText(text);
     }
@@ -114,7 +113,7 @@ public class SongRecycler extends RecyclerView.Adapter<SongRecycler.ViewHolder> 
             OutputStream outputStream = pContext.getContentResolver().openOutputStream(uri);
             pBitmap.compress(Bitmap.CompressFormat.JPEG, 100, outputStream);
             outputStream.close();
-            Picasso.get().load(uri).fit().placeholder(R.drawable.ic_launcher_background).into(pImageView);
+            Picasso.get().load(uri).fit().placeholder(R.drawable.missing_art).into(pImageView);
         } catch (Exception e) {
             Picasso.get().load(R.drawable.missing_art).fit().into(pImageView);
         }

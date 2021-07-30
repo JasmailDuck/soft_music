@@ -5,16 +5,26 @@ import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
 
 import android.Manifest;
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.media.AudioAttributes;
 import android.media.MediaMetadataRetriever;
+import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Handler;
+import android.view.View;
+import android.widget.SeekBar;
+import android.widget.Toast;
 
 import com.makeramen.roundedimageview.RoundedImageView;
+import com.squareup.picasso.Picasso;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -23,7 +33,7 @@ import java.util.List;
  * @author jasmailduck
  *
  */
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity{
 
     //-------DATA-----------//
 
@@ -52,6 +62,8 @@ public class MainActivity extends AppCompatActivity {
     //Stores the byte array needed to covert tha song image to a bitmap
     private byte[] art;
 
+    private MediaPlayer mediaPlayer;
+
     //------------VIEWS & ADAPTERS-------------//
 
     //Holds the main screen fragment view
@@ -59,6 +71,12 @@ public class MainActivity extends AppCompatActivity {
 
     //Holds the imageview of the album art in the music player
     private RoundedImageView album;
+
+    SeekBar seekBar;
+
+    Runnable runnable;
+
+    Handler handler;
 
     //--------------------PRIVATE METHODS--------------------//
 
@@ -195,7 +213,99 @@ public class MainActivity extends AppCompatActivity {
 
         fragmentManger(HOME_FRAG);
 
+        album.setImageResource(R.drawable.missing_art);
+
+        handler = new Handler();
+
+        seekBar = findViewById(R.id.music_seeker);
+
+        seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                if (fromUser) {
+                    mediaPlayer.seekTo(progress);
+                    seekBar.setProgress(progress);
+                }
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+
+            }
+        });
+
 
     }
 
+    public void setMediaPlayerInfo(int position){
+        loadBitmapByPicasso(this, ListOfSongs.listOfSongs.get(position).getArt(), album);
+        Toast.makeText(this,"Imagae No", Toast.LENGTH_SHORT).show();
+    }
+
+
+
+    private void loadBitmapByPicasso(Context pContext, Bitmap pBitmap, RoundedImageView pImageView) {
+        try {
+
+            Uri uri = Uri.fromFile(File.createTempFile("temp_file_name", ".jpg", pContext.getCacheDir()));
+            OutputStream outputStream = pContext.getContentResolver().openOutputStream(uri);
+            pBitmap.compress(Bitmap.CompressFormat.JPEG, 100, outputStream);
+            outputStream.close();
+            Picasso.get().load(uri).fit().placeholder(R.drawable.missing_art).into(pImageView);
+        } catch (Exception e) {
+            Picasso.get().load(R.drawable.missing_art).fit().into(pImageView);
+        }
+    }
+
+
+    public  void playMedia(Context context, int position){
+        if (mediaPlayer != null){
+            mediaPlayer.release();
+            mediaPlayer = null;
+        }
+        Uri uri = Uri.fromFile(ListOfSongs.listOfSongs.get(position).getPath());
+        mediaPlayer = new MediaPlayer();
+        mediaPlayer.setAudioAttributes(
+                new AudioAttributes.Builder()
+                        .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+                        .setUsage(AudioAttributes.USAGE_MEDIA)
+                        .build()
+        );
+        try {
+            mediaPlayer.setDataSource(context.getApplicationContext(), uri);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        mediaPlayer.prepareAsync();
+        mediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+            @Override
+            public void onPrepared(MediaPlayer mp) {
+                seekBar.setMax(mediaPlayer.getDuration());
+                mediaPlayer.start();
+                seekBarUpdater();
+
+            }
+        });
+
+    }
+
+    public void seekBarUpdater(){
+        int currPos = mediaPlayer.getCurrentPosition();
+        seekBar.setProgress(currPos);
+
+        runnable = new Runnable() {
+            @Override
+            public void run() {
+                seekBarUpdater();
+            }
+        };
+
+        handler.postDelayed(runnable, 1000);
+
+    }
 }
