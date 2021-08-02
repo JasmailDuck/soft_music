@@ -31,12 +31,11 @@
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/song_recycler"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-
+        android:layout_height="0dp"
         android:overScrollMode="ifContentScrolls"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/sub_text_holder_song"
-        />
+        app:layout_constraintTop_toBottomOf="@+id/sub_text_holder_song" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

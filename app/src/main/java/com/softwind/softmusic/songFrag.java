@@ -32,22 +32,19 @@ public class songFrag extends Fragment implements SongRecycler.ItemClickListener
     private List<String> text = new ArrayList<String>();
 
     private void dataLoad(){
-        for(int i = 0; i <= ListOfSongs.listOfSongs.size(); i++){
+        for(int i = 0; i < ListOfSongs.listOfSongs.size(); i++){
+
+
             if (text.isEmpty()){
                 image.add(ListOfSongs.listOfSongs.get(i).getArt());
                 text.add(ListOfSongs.listOfSongs.get(i).getSongName());
             } else {
-                try {
                     if (!text.contains(ListOfSongs.listOfSongs.get(i).getSongName())){
                         image.add(ListOfSongs.listOfSongs.get(i).getArt());
                         text.add(ListOfSongs.listOfSongs.get(i).getSongName());
-                    }
-                } catch (Exception e){
-
+                    } else {
                 }
-
             }
-
 
 
         }
@@ -82,7 +79,7 @@ public class songFrag extends Fragment implements SongRecycler.ItemClickListener
 
         adapter = new SongRecycler(getContext(),image,text);
         adapter.setClickListener(this);
-        adapter.setHasStableIds(true);
+
 
         recyclerView.setAdapter(adapter);
 
@@ -93,7 +90,7 @@ public class songFrag extends Fragment implements SongRecycler.ItemClickListener
 
     @Override
     public void onItemClick(View view, int position) {
-        ((MainActivity)getActivity()).playMedia(getContext(), position);
+        ((MainActivity)getActivity()).play(position);
 
         ListOfSongs.recentListOfSongs.add(ListOfSongs.listOfSongs.get(position));
 

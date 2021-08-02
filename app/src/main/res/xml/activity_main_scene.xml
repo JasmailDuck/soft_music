@@ -6,7 +6,7 @@
     <Transition
         motion:constraintSetEnd="@+id/end"
         motion:constraintSetStart="@id/start"
-        motion:duration="200"
+        motion:duration="500"
         motion:motionInterpolator="cubic(0.4,0,0.39,1)"
         motion:pathMotionArc="none"
         motion:layoutDuringTransition="honorRequest">
@@ -22,10 +22,10 @@
 
     <ConstraintSet android:id="@+id/start">
         <Constraint
-            android:layout_height="120dp"
+            android:layout_height="80dp"
             motion:layout_constraintTop_toTopOf="@+id/music_player_widget"
             motion:layout_constraintBottom_toBottomOf="@+id/music_player_widget"
-            android:layout_width="120dp"
+            android:layout_width="80dp"
             android:id="@+id/album_art_player"
 
             motion:layout_constraintStart_toStartOf="@+id/music_player_widget"
@@ -40,13 +40,57 @@
             android:visibility="invisible"
             motion:layout_constraintStart_toStartOf="parent" />
         <Constraint
-            android:layout_height="500dp"
+            android:layout_height="0dp"
             motion:layout_constraintStart_toStartOf="parent"
-            motion:layout_constraintBottom_toTopOf="@+id/music_player_widget"
             motion:layout_constraintEnd_toEndOf="parent"
             android:layout_width="match_parent"
             motion:layout_constraintTop_toBottomOf="@+id/title_bar_container_home"
-            android:id="@+id/home_content_fragment_container" />
+            android:id="@+id/home_content_fragment_container"
+            motion:layout_constraintBottom_toTopOf="@+id/music_player_widget" />
+        <Constraint
+            android:id="@+id/artist_name_player"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:visibility="visible"
+            motion:layout_constraintTop_toBottomOf="@+id/song_name_player"
+            motion:layout_constraintStart_toEndOf="@+id/album_art_player" />
+
+        <Constraint
+            android:id="@+id/music_player_widget"
+            motion:layout_constraintEnd_toEndOf="parent"
+            android:layout_width="match_parent"
+            android:layout_height="100dp"
+            motion:layout_constraintBottom_toBottomOf="parent"
+            motion:layout_constraintStart_toStartOf="parent"
+            android:layout_marginBottom="8dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="8dp" />
+        <Constraint
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            motion:layout_constraintBottom_toBottomOf="@+id/music_player_widget"
+            android:id="@+id/back_track_button"
+            motion:layout_constraintTop_toBottomOf="@+id/home_content_fragment_container"
+            motion:layout_constraintStart_toEndOf="@+id/artist_name_player"
+            android:layout_marginStart="30dp" />
+        <Constraint
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            motion:layout_constraintBottom_toBottomOf="@+id/music_player_widget"
+            android:id="@+id/next_track_button"
+            motion:layout_constraintEnd_toEndOf="@+id/music_player_widget"
+            android:layout_marginEnd="32dp"
+            motion:layout_constraintTop_toBottomOf="@+id/home_content_fragment_container" />
+        <Constraint
+            android:id="@+id/play_button"
+            motion:layout_constraintStart_toEndOf="@+id/back_track_button"
+            android:layout_width="30dp"
+            android:layout_height="40dp"
+            motion:layout_constraintBottom_toBottomOf="@+id/music_player_widget"
+            motion:layout_constraintEnd_toStartOf="@+id/next_track_button"
+            motion:layout_constraintTop_toBottomOf="@+id/home_content_fragment_container"
+            android:layout_marginStart="0dp" />
+
     </ConstraintSet>
 
     <ConstraintSet android:id="@+id/end">
@@ -86,15 +130,15 @@
             android:layout_marginBottom="8dp" />
         <Constraint
             android:layout_height="350dp"
-            android:layout_width="match_parent"
+            android:layout_width="350dp"
             android:id="@+id/album_art_player"
 
             motion:layout_constraintTop_toTopOf="@+id/music_player_widget"
             motion:layout_constraintStart_toStartOf="@id/music_player_widget"
             motion:layout_constraintEnd_toEndOf="@id/music_player_widget"
-            android:layout_marginStart="20dp"
-            android:layout_marginEnd="20dp"
-            android:layout_marginTop="10dp" />
+            android:layout_marginStart="0dp"
+            android:layout_marginEnd="0dp"
+            android:layout_marginTop="20dp" />
         <Constraint
             android:layout_height="wrap_content"
             android:layout_width="wrap_content"
