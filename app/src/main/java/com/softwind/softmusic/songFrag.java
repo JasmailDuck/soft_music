@@ -90,6 +90,7 @@ public class songFrag extends Fragment implements SongRecycler.ItemClickListener
 
     @Override
     public void onItemClick(View view, int position) {
+
         ((MainActivity)getActivity()).play(position);
 
         ListOfSongs.recentListOfSongs.add(ListOfSongs.listOfSongs.get(position));

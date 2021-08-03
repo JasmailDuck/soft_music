@@ -2,21 +2,37 @@ package com.softwind.softmusic;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.content.res.AppCompatResources;
 import androidx.core.app.ActivityCompat;
+import androidx.core.app.NotificationChannelCompat;
 import androidx.core.app.NotificationCompat;
+import androidx.core.app.NotificationManagerCompat;
+import androidx.core.app.TaskStackBuilder;
+import androidx.core.graphics.drawable.DrawableCompat;
 import androidx.fragment.app.Fragment;
+import androidx.palette.graphics.Palette;
 
 import android.Manifest;
+import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.Context;
+import android.content.Intent;
+import android.content.res.ColorStateList;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.media.MediaMetadata;
+import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.media.MediaMetadataRetriever;
 import android.media.session.MediaSession;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
+import android.provider.MediaStore;
+import android.support.v4.media.MediaDescriptionCompat;
+import android.support.v4.media.session.MediaSessionCompat;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.SeekBar;
@@ -24,8 +40,16 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.exoplayer2.MediaItem;
+import com.google.android.exoplayer2.MediaMetadata;
+import com.google.android.exoplayer2.MetadataRetriever;
 import com.google.android.exoplayer2.Player;
 import com.google.android.exoplayer2.SimpleExoPlayer;
+import com.google.android.exoplayer2.ext.mediasession.MediaSessionConnector;
+import com.google.android.exoplayer2.ext.mediasession.TimelineQueueNavigator;
+import com.google.android.exoplayer2.metadata.Metadata;
+import com.google.android.exoplayer2.source.TrackGroupArray;
+import com.google.android.exoplayer2.ui.PlayerNotificationManager;
+import com.google.common.util.concurrent.ListenableFuture;
 import com.makeramen.roundedimageview.RoundedImageView;
 import com.squareup.picasso.Picasso;
 
@@ -42,6 +66,7 @@ import java.util.List;
 public class MainActivity extends AppCompatActivity {
 
     public final int SONG_ORGINAL_TYPE = 0;
+
 
     //-------DATA-----------//
 
@@ -70,14 +95,15 @@ public class MainActivity extends AppCompatActivity {
     //Stores the byte array needed to covert tha song image to a bitmap
     private byte[] art;
 
+    //Stores the musicplayer
     private SimpleExoPlayer songPlayer;
 
-    private int indexOfSong;
-
+    //Will be optimized
     private boolean taskKill = true;
 
+    private MediaSessionCompat mediaSession;
+    private MediaSessionConnector mediaSessionConnector;
 
-    NotificationCompat.Builder mediaNotif;
 
     //------------VIEWS & ADAPTERS-------------//
 
@@ -88,30 +114,43 @@ public class MainActivity extends AppCompatActivity {
     private RoundedImageView album;
 
     //Stores the seekbar view
-    SeekBar seekBar;
+    private SeekBar seekBar;
 
     //Runnable needed for updating the seekbar
-    Runnable runnable;
+    private Runnable runnable;
 
     //E
-    Handler handler;
+    private Handler handler;
 
     //Stores the next track button
-    ImageButton nextTrack;
+    private ImageButton nextTrack;
 
     //Stores the play pause button
-    ImageButton playPause;
+    private ImageButton playPause;
 
     //Stores the back button
-    ImageButton previousTrack;
+    private ImageButton previousTrack;
 
-    TextView songTextView;
+    //Stores the song text
+    private TextView songTextView;
 
-    TextView artistTextView;
+    //Stores the artist text
+    private TextView artistTextView;
 
-    MediaSession mediaSession;
+    //Converts and stores the Song object into a Media Item object
+    private MediaItem mediaItem;
 
-    MediaMetadata mediaMetadata;
+    View view;
+
+    private int lightSwatch;
+    private int lightMuteSwatch;
+    private int muteSwatch;
+
+    private int darkuteSwatch;
+    private int darkvibrantSwatch;
+    private int dominantSwacth;
+
+    private PlayerNotificationManager playerNotificationManager;
 
 
     //--------------------PRIVATE METHODS--------------------//
@@ -119,6 +158,7 @@ public class MainActivity extends AppCompatActivity {
 
     /**
      * Simple method to control the fragment view
+     *
      * @param fragment
      */
     private void fragmentManger(Fragment fragment) {
@@ -212,6 +252,7 @@ public class MainActivity extends AppCompatActivity {
     /**
      * A custom string formatter. Formats the string to hardcoded requirments.
      * May need some tuning but not the biggest priority.
+     *
      * @param songName
      * @return
      */
@@ -239,6 +280,7 @@ public class MainActivity extends AppCompatActivity {
     /**
      * Basically the method that gets called when an activity gets launched.
      * Responsible for initializing and starting other methods
+     *
      * @param savedInstanceState
      */
     @Override
@@ -256,9 +298,11 @@ public class MainActivity extends AppCompatActivity {
         listOfSongPaths = findSongs(Environment.getExternalStorageDirectory().getAbsolutePath());
         album = findViewById(R.id.album_art_player);
         songTextView = findViewById(R.id.song_name_player);
+        songTextView.setSelected(true);
         artistTextView = findViewById(R.id.artist_name_player);
-
-
+        album.setImageResource(R.drawable.missing_art);
+        view = findViewById(R.id.music_player_widget);
+        seekBar.setBackground(AppCompatResources.getDrawable(this, R.drawable.rounded_rec));
         //-------------METHODS--------------//
         permissionHandler();
         metadataExtraction();
@@ -290,53 +334,100 @@ public class MainActivity extends AppCompatActivity {
         seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                double l = progress/100.0;
-                double q = l * ((double)songPlayer.getDuration());
+                double l = progress / 100.0;
+                double q = l * ((double) songPlayer.getDuration());
                 long f = (new Double(q)).longValue();
-                if(fromUser){
-                        songTextView.setText(Long.toString(f));
-                        songPlayer.seekTo(f);
-                        //songPlayer.prepare();
-                        seekBar.setProgress(progress);
+                if (fromUser) {
+
+                    songPlayer.seekTo(f);
+
+                    seekBar.setProgress(progress);
                 }
 
             }
 
             @Override
             public void onStartTrackingTouch(SeekBar seekBar) {
-                //taskKill = false;
-                //songPlayer.pause();
+
             }
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
 
-                //songPlayer.play();
-                //taskKill = true;
-                //seekBarUpdater();
+
             }
         });
-
-        //-------TEMP OR TESTING-----------//
-        album.setImageResource(R.drawable.missing_art);
-
         songPlayer.addListener(new Player.Listener() {
             @Override
             public void onMediaItemTransition(MediaItem mediaItem, int reason) {
+
+            }
+        });
+
+        songPlayer.addListener(new Player.Listener() {
+            @Override
+            public void onPlaybackStateChanged(int state) {
+
                 setMediaPlayerInfo(songPlayer.getCurrentWindowIndex());
                 seekBar.setMax(100);
                 seekBarUpdater();
             }
         });
+        //-------TEMP OR TESTING-----------//
+
+        palatteGen(ListOfSongs.listOfSongs.get(songPlayer.getCurrentWindowIndex()).getArt());
 
 
 
 
     }
 
+    private void playPause() {
+        if (songPlayer.isPlaying()) {
+            songPlayer.pause();
+        } else {
+            songPlayer.play();
+
+        }
+    }
+
+    /**
+     * Advances the song to the next
+     *
+     * @param
+     */
+    private void next() {
+        songPlayer.next();
+        setMediaPlayerInfo(songPlayer.getCurrentWindowIndex());
+    }
+
+    /**
+     * Goes back o the previous song
+     *
+     * @param
+     */
+    private void back() {
+        songPlayer.previous();
+        setMediaPlayerInfo(songPlayer.getCurrentWindowIndex());
+    }
+
+    private Uri bitmaptoUri(Context pContext, Bitmap pBitmap){
+        try {
+            Uri uri = Uri.fromFile(File.createTempFile("temp_file_name", ".jpg", pContext.getCacheDir()));
+            OutputStream outputStream = pContext.getContentResolver().openOutputStream(uri);
+            pBitmap.compress(Bitmap.CompressFormat.JPEG, 100, outputStream);
+            outputStream.close();
+            return uri;
+        } catch (Exception e) {
+
+        }
+        return null;
+    }
+
     /**
      * Converts a bitmap image to a {@link Uri} reference.
      * Loads the image to the respected Image View container
+     *
      * @param pContext
      * @param pBitmap
      * @param pImageView
@@ -354,54 +445,138 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    Palette palette;
+    public void palatteGen(Bitmap bitmap){
+
+
+
+        Palette.from(bitmap).generate(new Palette.PaletteAsyncListener() {
+            @Override
+            public void onGenerated(Palette palette) {
+                lightSwatch = palette.getLightMutedColor(Color.RED);
+                lightMuteSwatch = palette.getLightMutedColor(Color.BLACK);
+                muteSwatch = palette.getMutedColor(Color.BLACK);
+
+                darkuteSwatch = palette.getDarkMutedColor(Color.BLACK);
+                darkvibrantSwatch = palette.getDarkVibrantColor(Color.BLACK);
+                dominantSwacth = palette.getDominantColor(Color.BLACK);
+
+            }
+        });
+
+
+    }
+
     //------------------PUBLIC METHODS-----------------------//
 
     /**
      * Loads all the song information on tho the media widget
+     *
      * @param position
      */
     public void setMediaPlayerInfo(int position) {
+        Bitmap art = ListOfSongs.listOfSongs.get(position).getArt();
+        palatteGen(art);
+        loadBitmapByPicasso(this, art, album);
 
-
-        loadBitmapByPicasso(this, ListOfSongs.listOfSongs.get(position).getArt(), album);
         songTextView.setText(ListOfSongs.listOfSongs.get(position).getSongName());
+        songTextView.setTextColor(darkuteSwatch);
         artistTextView.setText(ListOfSongs.listOfSongs.get(position).getArtistName());
+        artistTextView.setTextColor(darkuteSwatch);
 
+        nextTrack.setBackground(drawablecolorChanger(R.drawable.ic_track_seek_next, darkuteSwatch));
+        previousTrack.setBackground(drawablecolorChanger(R.drawable.ic_track_seek_back,darkuteSwatch));
+        playPause.setBackground(drawablecolorChanger(R.drawable.ic_play,darkuteSwatch));
+        view.setBackground(drawablecolorChanger(R.drawable.rounded_rec, muteSwatch));
+        seekBar.setBackground(drawablecolorChanger(R.drawable.rounded_rec, darkuteSwatch));
+
+
+
+    }
+
+
+
+    private Drawable drawablecolorChanger(int drawableFile, int swatchType){
+        Drawable drawable = AppCompatResources.getDrawable(this,drawableFile);
+        Drawable wrappedDrawable = DrawableCompat.wrap(drawable);
+        DrawableCompat.setTint(wrappedDrawable, swatchType);
+        return wrappedDrawable;
     }
 
     /**
      * Responsible for playing the song
-
+     *
      * @param
      */
     public void mediaManager(int playlistType) {
 
         if (playlistType == 0) {
             songPlayer = new SimpleExoPlayer.Builder(MainActivity.this).build();
-            for (int i = 0; i < ListOfSongs.listOfSongs.size(); i++){
-                songPlayer.addMediaItem(MediaItem.fromUri(Uri.fromFile(ListOfSongs.listOfSongs.get(i).getPath())));
+            for (int i = 0; i < ListOfSongs.listOfSongs.size(); i++) {
+
+                MediaMetadata mediaMetadata = new MediaMetadata.Builder()
+                        .setTitle(ListOfSongs.listOfSongs.get(i).getSongName())
+                        .setAlbumArtist(ListOfSongs.listOfSongs.get(i).getArtistName())
+                        .setAlbumTitle(ListOfSongs.listOfSongs.get(i).getAlbumName())
+                        .setArtworkUri(bitmaptoUri(this,ListOfSongs.listOfSongs.get(i).getArt()))
+                        .build();
+
+                mediaItem = new MediaItem.Builder()
+                        .setUri(Uri.fromFile(ListOfSongs.listOfSongs.get(i).getPath()))
+                        .setMediaMetadata(mediaMetadata)
+                        .build();
+
+                songPlayer.addMediaItem(mediaItem);
 
             }
             songPlayer.prepare();
         }
 
+        mediaSession = new MediaSessionCompat(this, "media");
+        mediaSessionConnector = new MediaSessionConnector(mediaSession);
+        mediaSessionConnector.setPlayer(songPlayer);
+        mediaSession.setActive(true);
 
+        MediaSessionConnector.QueueNavigator queueNavigator = new TimelineQueueNavigator(mediaSession) {
+            @Override
+            public MediaDescriptionCompat getMediaDescription(Player player, int windowIndex) {
+                MediaDescriptionCompat mediaDescriptionCompat = new MediaDescriptionCompat.Builder()
+                        .setMediaUri(player.getMediaItemAt(windowIndex).mediaMetadata.mediaUri)
+                        .setTitle(player.getMediaItemAt(windowIndex).mediaMetadata.title)
+                        .build();
+                return mediaDescriptionCompat;
+            }
+        };
+
+        mediaSessionConnector.setQueueNavigator(queueNavigator);
+        NotificationChannel notificationChannel = new NotificationChannel("Music", "Music", NotificationManager.IMPORTANCE_DEFAULT);
+        NotificationManager notificationManager = getSystemService(NotificationManager.class);
+        notificationManager.createNotificationChannel(notificationChannel);
+
+        playerNotificationManager = new PlayerNotificationManager.Builder(this,544,"Music" ,new DescriptionAdapter())
+                .build();
+
+        playerNotificationManager.setMediaSessionToken(mediaSession.getSessionToken());
+        playerNotificationManager.setPlayer(songPlayer);
 
     }
-    public void play(int position){
+
+
+
+    public void play(int position) {
         setMediaPlayerInfo(position);
         songPlayer.seekToDefaultPosition(position);
         playPause();
     }
-    int i = 0;
+
     /**
      * Responsible for syncing the music player with the seek bar
      */
     public void seekBarUpdater() {
         if (taskKill) {
-        double c = ((double) songPlayer.getCurrentPosition()/songPlayer.getDuration()* 100);
-        artistTextView.setText(Double.toString(c));
-        seekBar.setProgress((int) c, true);
+            double c = ((double) songPlayer.getCurrentPosition() / songPlayer.getDuration() * 100);
+
+            seekBar.setProgress((int) c, true);
 
             runnable = new Runnable() {
                 @Override
@@ -412,36 +587,50 @@ public class MainActivity extends AppCompatActivity {
             };
         }
 
-    handler.postDelayed(runnable,1000 );
+        handler.postDelayed(runnable, 1000);
 
 
     }
 
-    private void playPause(){
-        if (songPlayer.isPlaying()){
-            songPlayer.pause();
-        } else {
-            songPlayer.play();
+    private class DescriptionAdapter implements PlayerNotificationManager.MediaDescriptionAdapter{
+
+        @Override
+        public CharSequence getCurrentContentTitle(Player player) {
+            return player.getMediaItemAt(player.getCurrentWindowIndex()).mediaMetadata.title;
+        }
+
+        @Nullable
+        @Override
+        public PendingIntent createCurrentContentIntent(Player player) {
+
+
+            Intent resultIntent = new Intent(getApplicationContext(), MainActivity.class);
+
+            TaskStackBuilder stackBuilder = TaskStackBuilder.create(getApplicationContext());
+            stackBuilder.addNextIntentWithParentStack(resultIntent);
+
+            PendingIntent resultPendingIntent =
+                    stackBuilder.getPendingIntent(0, PendingIntent.FLAG_IMMUTABLE);
+            return resultPendingIntent;
+        }
+
+        @Nullable
+        @Override
+        public CharSequence getCurrentContentText(Player player) {
+            return player.getMediaItemAt(player.getCurrentWindowIndex()).mediaMetadata.albumArtist;
+        }
+
+        @Nullable
+        @Override
+        public Bitmap getCurrentLargeIcon(Player player, PlayerNotificationManager.BitmapCallback callback) {
+            try {
+                return MediaStore.Images.Media.getBitmap(getContentResolver(),player.getMediaItemAt(player.getCurrentWindowIndex()).mediaMetadata.artworkUri);
+            } catch (Exception e) {
+                return null;
+            }
+
 
         }
-    }
-
-    /**
-     * Advances the song to the next
-     * @param
-     */
-    private void next() {
-        songPlayer.next();
-        setMediaPlayerInfo(songPlayer.getCurrentWindowIndex());
-    }
-
-    /**
-     * Goes back o the previous song
-     * @param
-     */
-    private void back() {
-       songPlayer.previous();
-        setMediaPlayerInfo(songPlayer.getCurrentWindowIndex());
     }
 
 
