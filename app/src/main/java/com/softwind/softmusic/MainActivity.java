@@ -1,58 +1,34 @@
 package com.softwind.softmusic;
 
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.content.res.AppCompatResources;
 import androidx.core.app.ActivityCompat;
-import androidx.core.app.NotificationChannelCompat;
-import androidx.core.app.NotificationCompat;
-import androidx.core.app.NotificationManagerCompat;
-import androidx.core.app.TaskStackBuilder;
 import androidx.core.graphics.drawable.DrawableCompat;
 import androidx.fragment.app.Fragment;
 import androidx.palette.graphics.Palette;
 
 import android.Manifest;
-import android.app.Notification;
-import android.app.NotificationChannel;
-import android.app.NotificationManager;
-import android.app.PendingIntent;
+import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
-import android.content.res.ColorStateList;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.media.MediaMetadataRetriever;
-import android.media.session.MediaSession;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.IBinder;
-import android.provider.MediaStore;
-import android.support.v4.media.MediaDescriptionCompat;
-import android.support.v4.media.session.MediaSessionCompat;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.SeekBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.google.android.exoplayer2.MediaItem;
-import com.google.android.exoplayer2.MediaMetadata;
-import com.google.android.exoplayer2.MetadataRetriever;
-import com.google.android.exoplayer2.Player;
-import com.google.android.exoplayer2.SimpleExoPlayer;
-import com.google.android.exoplayer2.ext.mediasession.MediaSessionConnector;
-import com.google.android.exoplayer2.ext.mediasession.TimelineQueueNavigator;
-import com.google.android.exoplayer2.metadata.Metadata;
-import com.google.android.exoplayer2.source.TrackGroupArray;
-import com.google.android.exoplayer2.ui.PlayerNotificationManager;
-import com.google.common.util.concurrent.ListenableFuture;
 import com.makeramen.roundedimageview.RoundedImageView;
 import com.squareup.picasso.Picasso;
 
@@ -66,7 +42,7 @@ import java.util.List;
  *
  * @author jasmailduck
  */
-public class MainActivity extends AppCompatActivity implements ServiceInter {
+public class MainActivity extends AppCompatActivity implements UIUpdateFromServiceHandle {
 
     public final int SONG_ORGINAL_TYPE = 0;
 
@@ -98,12 +74,8 @@ public class MainActivity extends AppCompatActivity implements ServiceInter {
     //Stores the byte array needed to covert tha song image to a bitmap
     private byte[] art;
 
-
-
     //Will be optimized
     private boolean taskKill = true;
-
-
 
 
     //------------VIEWS & ADAPTERS-------------//
@@ -120,7 +92,7 @@ public class MainActivity extends AppCompatActivity implements ServiceInter {
     //Runnable needed for updating the seekbar
     private Runnable runnable;
 
-    //E
+    //Handler to control the speed of the runnable using post delay
     private Handler handler;
 
     //Stores the next track button
@@ -138,8 +110,7 @@ public class MainActivity extends AppCompatActivity implements ServiceInter {
     //Stores the artist text
     private TextView artistTextView;
 
-    //Converts and stores the Song object into a Media Item object
-    private MediaItem mediaItem;
+
 
     View view;
 
@@ -151,12 +122,62 @@ public class MainActivity extends AppCompatActivity implements ServiceInter {
     private int darkvibrantSwatch;
     private int dominantSwacth;
 
-    exampleService mService;
+    MusicPlayerService mService;
     Boolean mIsBound;
 
+    Intent serviceIntent;
+
+    //--------------------SERVICES MANAGER--------------------//
+
+    /**
+     * Starts the services that initiated the media player related methods
+     */
+    private void startService() {
+        serviceIntent = new Intent(this, MusicPlayerService.class);
+        startForegroundService(serviceIntent);
+        bindService();
+    }
+
+    /**
+     * Stops services
+     */
+    private void stopService(){
+        stopService(serviceIntent);
+    }
+
+    /**
+     * Binds the service to the main activity.
+     * Enables access to public methods inside of the service
+     */
+    private void bindService() {
+        Intent serviceBindIntent = new Intent(this, MusicPlayerService.class);
+        bindService(serviceBindIntent, serviceConnection, Context.BIND_AUTO_CREATE);
+    }
+
+    /**
+     * Gets the service from the binder and stores the instance for global access
+     * Callbacks are set so the service can access interface methods from the main activity.
+     */
+    private ServiceConnection serviceConnection = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName className, IBinder iBinder) {
+
+            // We've bound to MyService, cast the IBinder and get MyBinder instance
+            MusicPlayerService.MyBinder binder = (MusicPlayerService.MyBinder) iBinder;
+            mService = binder.getService();
+            mIsBound = true;
+            mService.setCallbacks(MainActivity.this);
+            buttonListnerSetup();
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName arg0) {
+
+            mIsBound = false;
+        }
+    };
 
     //--------------------PRIVATE METHODS--------------------//
-
 
     /**
      * Simple method to control the fragment view
@@ -278,112 +299,26 @@ public class MainActivity extends AppCompatActivity implements ServiceInter {
         return extensionRemoved;
     }
 
+    /**
+     * Changes aspects of a given drawable file
+     * Currently is only set for changing the colour to the given swatch type colour
+     * @param drawableFile
+     * @param swatchType
+     * @return Drawable
+     */
+    private Drawable drawablecolorChanger(int drawableFile, int swatchType) {
+        Drawable drawable = AppCompatResources.getDrawable(this, drawableFile);
+        Drawable wrappedDrawable = DrawableCompat.wrap(drawable);
+        DrawableCompat.setTint(wrappedDrawable, swatchType);
+        return wrappedDrawable;
+    }
 
     /**
-     * Basically the method that gets called when an activity gets launched.
-     * Responsible for initializing and starting other methods
-     *
-     * @param savedInstanceState
+     * Sets up the button listeners
+     * Prolly wont need this in futures, as I will be making a method
+     * where the app can't start unless the service is active.
      */
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        //-----------DEFAULT ANDROID STUFF--------//
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-
-        startService();
-        //-----------INITIALIZERS----------//
-        handler = new Handler();
-        seekBar = findViewById(R.id.music_seeker);
-        nextTrack = findViewById(R.id.next_track_button);
-        playPause = findViewById(R.id.play_button);
-        previousTrack = findViewById(R.id.back_track_button);
-        listOfSongPaths = findSongs(Environment.getExternalStorageDirectory().getAbsolutePath());
-        album = findViewById(R.id.album_art_player);
-        songTextView = findViewById(R.id.song_name_player);
-        songTextView.setSelected(true);
-        artistTextView = findViewById(R.id.artist_name_player);
-        album.setImageResource(R.drawable.missing_art);
-        view = findViewById(R.id.music_player_widget);
-        seekBar.setBackground(AppCompatResources.getDrawable(this, R.drawable.rounded_rec));
-        //-------------METHODS--------------//
-        permissionHandler();
-        metadataExtraction();
-        fragmentManger(HOME_FRAG);
-
-
-
-
-
-        //-------------LISTENERS------------//
-
-        seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-            @Override
-            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                double l = progress / 100.0;
-                double q = l * ((double) mService.getDuration());
-                long f = (new Double(q)).longValue();
-                if (fromUser) {
-
-                    mService.seekTo(f);
-
-                    seekBar.setProgress(progress);
-                }
-
-            }
-
-            @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {
-
-            }
-
-            @Override
-            public void onStopTrackingTouch(SeekBar seekBar) {
-
-
-            }
-        });
-
-
-
-
-
-
-
-
-
-    }
-    private void startService(){
-        Intent serviceIntent = new Intent(this, exampleService.class);
-        startForegroundService(serviceIntent);
-
-        bindService();
-    }
-
-    private void bindService(){
-        Intent serviceBindIntent =  new Intent(this, exampleService.class);
-        bindService(serviceBindIntent, serviceConnection, Context.BIND_AUTO_CREATE);
-    }
-    private ServiceConnection serviceConnection = new ServiceConnection() {
-        @Override
-        public void onServiceConnected(ComponentName className, IBinder iBinder) {
-
-            // We've bound to MyService, cast the IBinder and get MyBinder instance
-            exampleService.MyBinder binder = (exampleService.MyBinder) iBinder;
-            mService = binder.getService();
-            mIsBound = true;
-            mService.setCallbacks(MainActivity.this);
-
-           fill();
-        }
-        @Override
-        public void onServiceDisconnected(ComponentName arg0) {
-
-            mIsBound = false;
-        }
-    };
-
-    private void fill(){
+    private void buttonListnerSetup() {
 
         nextTrack.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -409,9 +344,6 @@ public class MainActivity extends AppCompatActivity implements ServiceInter {
     }
 
 
-
-
-
     /**
      * Converts a bitmap image to a {@link Uri} reference.
      * Loads the image to the respected Image View container
@@ -434,8 +366,11 @@ public class MainActivity extends AppCompatActivity implements ServiceInter {
     }
 
 
-    public void palatteGen(Bitmap bitmap){
-
+    /**
+     * Method responsible for extracting colour types from a given bitmap
+     * @param bitmap
+     */
+    public void palatteGen(Bitmap bitmap) {
 
 
         Palette.from(bitmap).generate(new Palette.PaletteAsyncListener() {
@@ -473,32 +408,21 @@ public class MainActivity extends AppCompatActivity implements ServiceInter {
         artistTextView.setTextColor(darkuteSwatch);
 
         nextTrack.setBackground(drawablecolorChanger(R.drawable.ic_track_seek_next, darkuteSwatch));
-        previousTrack.setBackground(drawablecolorChanger(R.drawable.ic_track_seek_back,darkuteSwatch));
-        playPause.setBackground(drawablecolorChanger(R.drawable.ic_play,darkuteSwatch));
+        previousTrack.setBackground(drawablecolorChanger(R.drawable.ic_track_seek_back, darkuteSwatch));
+        playPause.setBackground(drawablecolorChanger(R.drawable.ic_play, darkuteSwatch));
         view.setBackground(drawablecolorChanger(R.drawable.rounded_rec, muteSwatch));
         seekBar.setBackground(drawablecolorChanger(R.drawable.rounded_rec, darkuteSwatch));
 
 
-
     }
 
-
-
-    private Drawable drawablecolorChanger(int drawableFile, int swatchType){
-        Drawable drawable = AppCompatResources.getDrawable(this,drawableFile);
-        Drawable wrappedDrawable = DrawableCompat.wrap(drawable);
-        DrawableCompat.setTint(wrappedDrawable, swatchType);
-        return wrappedDrawable;
-    }
-
-
-
-
-
+    /**
+     * Methods is used by the fragments to play the song at a given touch position
+     * @param position
+     */
     public void play(int position) {
         setMediaPlayerInfo(position);
         mService.play(position);
-
     }
 
     /**
@@ -521,19 +445,100 @@ public class MainActivity extends AppCompatActivity implements ServiceInter {
 
         handler.postDelayed(runnable, 1000);
 
-
     }
 
 
+    //------------------OVERRIDES---------------------//
+
+
+    /**
+     * Gets the current playing song from the service and updates the current music widget
+     * accordingly
+     */
     @Override
-    public void doSomething(int i) {
+    public void updateUIInfo(int i) {
         setMediaPlayerInfo(i);
     }
 
+    /**
+     * Basically the method that gets called when an activity gets launched.
+     * Responsible for initializing and starting other methods
+     *
+     * @param savedInstanceState
+     */
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        //-----------DEFAULT ANDROID STUFF--------//
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+
+        //-----------INITIALIZERS----------//
+        handler = new Handler();
+        seekBar = findViewById(R.id.music_seeker);
+        nextTrack = findViewById(R.id.next_track_button);
+        playPause = findViewById(R.id.play_button);
+        previousTrack = findViewById(R.id.back_track_button);
+        listOfSongPaths = findSongs(Environment.getExternalStorageDirectory().getAbsolutePath());
+        album = findViewById(R.id.album_art_player);
+        songTextView = findViewById(R.id.song_name_player);
+        songTextView.setSelected(true);
+        artistTextView = findViewById(R.id.artist_name_player);
+        album.setImageResource(R.drawable.missing_art);
+        view = findViewById(R.id.music_player_widget);
+        seekBar.setBackground(AppCompatResources.getDrawable(this, R.drawable.rounded_rec));
+        //-------------METHODS--------------//
+        permissionHandler();
+        metadataExtraction();
+        startService();
+        fragmentManger(HOME_FRAG);
+
+
+        //-------------LISTENERS------------//
+
+        seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                double l = progress / 100.0;
+                double q = l * ((double) mService.getDuration());
+                long f = (new Double(q)).longValue();
+                if (fromUser) {
+
+                    mService.seekTo(f);
+
+                    seekBar.setProgress(progress);
+                }
+
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+
+
+            }
+        });
+
+
+    }
+
+    /**
+     * Updates and starts the seekbar update runnable
+     */
     @Override
     public void updateSeekBar() {
         palatteGen(ListOfSongs.listOfSongs.get(mService.getIndex()).getArt());
         seekBar.setMax(100);
         seekBarUpdater();
+    }
+
+    @Override
+    protected void onDestroy() {
+        stopService();
+        super.onDestroy();
     }
 }

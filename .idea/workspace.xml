@@ -41,6 +41,8 @@
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/src/main/AndroidManifest.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/AndroidManifest.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/src/main/java/com/softwind/softmusic/MainActivity.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/softwind/softmusic/MainActivity.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/softwind/softmusic/ServiceInter.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/softwind/softmusic/UIUpdateFromServiceHandle.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/softwind/softmusic/exampleService.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/softwind/softmusic/MusicPlayerService.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -78,7 +80,7 @@
     <property name="DeviceAndSnapshotComboBoxAction.selectionTime" value="2021-07-30T00:22:18.891044Z" />
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$" />
-    <property name="settings.editor.selected.configurable" value="reference.settingsdialog.project.gradle" />
+    <property name="settings.editor.selected.configurable" value="preferences.lookFeel" />
   </component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
