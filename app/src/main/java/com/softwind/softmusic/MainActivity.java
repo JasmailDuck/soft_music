@@ -14,6 +14,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.pm.ActivityInfo;
+import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
@@ -28,8 +29,8 @@ import android.view.View;
 import android.widget.ImageButton;
 import android.widget.SeekBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
-import com.google.android.exoplayer2.MediaItem;
 import com.makeramen.roundedimageview.RoundedImageView;
 import com.squareup.picasso.Picasso;
 
@@ -112,7 +113,6 @@ public class MainActivity extends AppCompatActivity implements UIUpdateFromServi
     private TextView artistTextView;
 
 
-
     View view;
 
     private int lightSwatch;
@@ -123,7 +123,9 @@ public class MainActivity extends AppCompatActivity implements UIUpdateFromServi
     private int darkvibrantSwatch;
     private int dominantSwacth;
 
-    MusicPlayerService mService;
+    private boolean stat = false;
+
+    MusicPlayerService musicService;
     Boolean mIsBound;
 
     Intent serviceIntent;
@@ -142,7 +144,7 @@ public class MainActivity extends AppCompatActivity implements UIUpdateFromServi
     /**
      * Stops services
      */
-    private void stopService(){
+    private void stopService() {
         stopService(serviceIntent);
     }
 
@@ -165,10 +167,16 @@ public class MainActivity extends AppCompatActivity implements UIUpdateFromServi
 
             // We've bound to MyService, cast the IBinder and get MyBinder instance
             MusicPlayerService.MyBinder binder = (MusicPlayerService.MyBinder) iBinder;
-            mService = binder.getService();
+            musicService = binder.getService();
             mIsBound = true;
-            mService.setCallbacks(MainActivity.this);
+            musicService.setCallbacks(MainActivity.this);
             buttonListnerSetup();
+            if(musicService.isPlaying()){
+                setMediaPlayerInfo(musicService.getIndex());
+                updateSeekBar();
+            }
+
+
         }
 
         @Override
@@ -303,6 +311,7 @@ public class MainActivity extends AppCompatActivity implements UIUpdateFromServi
     /**
      * Changes aspects of a given drawable file
      * Currently is only set for changing the colour to the given swatch type colour
+     *
      * @param drawableFile
      * @param swatchType
      * @return Drawable
@@ -324,21 +333,21 @@ public class MainActivity extends AppCompatActivity implements UIUpdateFromServi
         nextTrack.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mService.next();
+                musicService.next();
 
             }
         });
         playPause.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mService.playPause();
+                musicService.playPause();
 
             }
         });
         previousTrack.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mService.back();
+                musicService.back();
             }
         });
 
@@ -367,29 +376,7 @@ public class MainActivity extends AppCompatActivity implements UIUpdateFromServi
     }
 
 
-    /**
-     * Method responsible for extracting colour types from a given bitmap
-     * @param bitmap
-     */
-    public void palatteGen(Bitmap bitmap) {
 
-
-        Palette.from(bitmap).generate(new Palette.PaletteAsyncListener() {
-            @Override
-            public void onGenerated(Palette palette) {
-                lightSwatch = palette.getLightMutedColor(Color.RED);
-                lightMuteSwatch = palette.getLightMutedColor(Color.BLACK);
-                muteSwatch = palette.getMutedColor(Color.BLACK);
-
-                darkuteSwatch = palette.getDarkMutedColor(Color.BLACK);
-                darkvibrantSwatch = palette.getDarkVibrantColor(Color.BLACK);
-                dominantSwacth = palette.getDominantColor(Color.BLACK);
-
-            }
-        });
-
-
-    }
 
     //------------------PUBLIC METHODS-----------------------//
 
@@ -400,30 +387,34 @@ public class MainActivity extends AppCompatActivity implements UIUpdateFromServi
      */
     public void setMediaPlayerInfo(int position) {
         Bitmap art = ListOfSongs.listOfSongs.get(position).getArt();
-        palatteGen(art);
+
         loadBitmapByPicasso(this, art, album);
 
         songTextView.setText(ListOfSongs.listOfSongs.get(position).getSongName());
-        songTextView.setTextColor(darkuteSwatch);
+        songTextView.setTextColor(Palette.from(art).generate().getDarkMutedColor(Color.BLACK));
         artistTextView.setText(ListOfSongs.listOfSongs.get(position).getArtistName());
-        artistTextView.setTextColor(darkuteSwatch);
+        artistTextView.setTextColor(Palette.from(art).generate().getDarkMutedColor(Color.BLACK));
 
-        nextTrack.setBackground(drawablecolorChanger(R.drawable.ic_track_seek_next, darkuteSwatch));
-        previousTrack.setBackground(drawablecolorChanger(R.drawable.ic_track_seek_back, darkuteSwatch));
-        playPause.setBackground(drawablecolorChanger(R.drawable.ic_play, darkuteSwatch));
-        view.setBackground(drawablecolorChanger(R.drawable.rounded_rec, muteSwatch));
-        seekBar.setBackground(drawablecolorChanger(R.drawable.rounded_rec, darkuteSwatch));
+        nextTrack.setBackground(drawablecolorChanger(R.drawable.ic_track_seek_next, Palette.from(art).generate().getDarkVibrantColor(Color.BLACK)));
+        previousTrack.setBackground(drawablecolorChanger(R.drawable.ic_track_seek_back, Palette.from(art).generate().getDarkVibrantColor(Color.BLACK)));
+        playPause.setBackground(drawablecolorChanger(R.drawable.ic_play, Palette.from(art).generate().getDarkVibrantColor(Color.BLACK)));
+        view.setBackground(drawablecolorChanger(R.drawable.rounded_rec, Palette.from(art).generate().getLightMutedColor(Color.BLACK)));
 
+        //seekBar.setProgressDrawable(AppCompatResources.getDrawable(this, R.drawable.seekbarfulllist));
+        seekBar.setBackground(drawablecolorChanger(R.drawable.progressback, Palette.from(art).generate().getLightMutedColor(Color.BLACK)));
+        seekBar.setThumb(drawablecolorChanger(R.drawable.ovalthumb,Palette.from(art).generate().getDarkVibrantColor(Color.BLACK)));
+        seekBar.setProgressDrawable(drawablecolorChanger(R.drawable.seekbarfulllist,Palette.from(art).generate().getDarkMutedColor(Color.BLACK)));
 
     }
 
     /**
      * Methods is used by the fragments to play the song at a given touch position
+     *
      * @param position
      */
     public void play(int position) {
         setMediaPlayerInfo(position);
-        mService.play(position);
+        musicService.play(position);
     }
 
     /**
@@ -431,7 +422,7 @@ public class MainActivity extends AppCompatActivity implements UIUpdateFromServi
      */
     public void seekBarUpdater() {
         if (taskKill) {
-            double c = ((double) mService.getCurrentPosition() / mService.getDuration() * 100);
+            double c = ((double) musicService.getCurrentPosition() / musicService.getDuration() * 100);
 
             seekBar.setProgress((int) c, true);
 
@@ -499,15 +490,13 @@ public class MainActivity extends AppCompatActivity implements UIUpdateFromServi
         //-------------LISTENERS------------//
 
         seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            long f;
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 double l = progress / 100.0;
-                double q = l * ((double) mService.getDuration());
-                long f = (new Double(q)).longValue();
+                double q = l * ((double) musicService.getDuration());
+                f = (new Double(q)).longValue();
                 if (fromUser) {
-
-                    mService.seekTo(f);
-
                     seekBar.setProgress(progress);
                 }
 
@@ -515,13 +504,14 @@ public class MainActivity extends AppCompatActivity implements UIUpdateFromServi
 
             @Override
             public void onStartTrackingTouch(SeekBar seekBar) {
-
+                taskKill = false;
             }
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
-
-
+                taskKill= true;
+                musicService.seekTo(f);
+                seekBarUpdater();
             }
         });
 
@@ -533,14 +523,15 @@ public class MainActivity extends AppCompatActivity implements UIUpdateFromServi
      */
     @Override
     public void updateSeekBar() {
-        palatteGen(ListOfSongs.listOfSongs.get(mService.getIndex()).getArt());
         seekBar.setMax(100);
         seekBarUpdater();
     }
 
     @Override
     protected void onDestroy() {
-        stopService();
+        //stopService(); //Only enable for debugging
         super.onDestroy();
     }
+
+    
 }

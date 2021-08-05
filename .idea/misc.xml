@@ -3,8 +3,11 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
+        <entry key="app/src/main/res/drawable/ovalthumb.xml" value="0.28125" />
+        <entry key="app/src/main/res/drawable/progressback.xml" value="0.28125" />
         <entry key="app/src/main/res/drawable/rounded_rec.xml" value="0.28125" />
-        <entry key="app/src/main/res/layout/activity_main.xml" value="0.25" />
+        <entry key="app/src/main/res/drawable/seekbarfulllist.xml" value="0.28125" />
+        <entry key="app/src/main/res/layout/activity_main.xml" value="0.1" />
       </map>
     </option>
   </component>

@@ -1,6 +1,7 @@
 package com.softwind.softmusic;
 
 import android.app.Activity;
+import android.app.IntentService;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -16,6 +17,7 @@ import android.os.IBinder;
 import android.provider.MediaStore;
 import android.support.v4.media.MediaDescriptionCompat;
 import android.support.v4.media.session.MediaSessionCompat;
+import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 
@@ -24,6 +26,7 @@ import com.google.android.exoplayer2.MediaItem;
 import com.google.android.exoplayer2.MediaMetadata;
 import com.google.android.exoplayer2.Player;
 import com.google.android.exoplayer2.SimpleExoPlayer;
+import com.google.android.exoplayer2.Timeline;
 import com.google.android.exoplayer2.audio.AudioAttributes;
 import com.google.android.exoplayer2.ext.mediasession.MediaSessionConnector;
 import com.google.android.exoplayer2.ext.mediasession.TimelineQueueNavigator;
@@ -36,8 +39,7 @@ public class MusicPlayerService extends Service {
 
     //----------------DATA-------------------//
 
-    //Stores the metadata retriever.
-    private MediaMetadataRetriever metadataRetriever;
+
 
     //Interface
     private UIUpdateFromServiceHandle UIUpdateFromServiceHandle;
@@ -59,6 +61,8 @@ public class MusicPlayerService extends Service {
 
     //Stores the binder
     private final IBinder mBinder = new MyBinder();
+
+    private boolean lol= false;
 
     //----------------PRIVATE METHODS---------------------//
 
@@ -83,7 +87,9 @@ public class MusicPlayerService extends Service {
 
     //-------------PUBLIC METHODS--------------------------//
 
+
     /**
+     *
      * Gets the media player's current playing song index
      * @return
      */
@@ -229,6 +235,10 @@ public class MusicPlayerService extends Service {
 
     }
 
+    public boolean isPlaying(){
+        return songPlayer.isPlaying();
+    }
+
     //--------------------OVERRIDES-----------------//
 
     /**
@@ -250,8 +260,17 @@ public class MusicPlayerService extends Service {
      */
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        songPlayer.addListener(new Player.Listener() {
+            @Override
+            public void onPlaybackStateChanged(int state) {
+                setMediaPlayerInfo(songPlayer.getCurrentWindowIndex());
+                UIUpdateFromServiceHandle.updateSeekBar();
+            }
+        });
 
-
+       return START_STICKY;
+    }
+    public void serviceFiller(){
         Intent pI = new Intent(this,MainActivity.class);
         PendingIntent pendingIntent = PendingIntent.getActivity(this,0,pI,0);
 
@@ -270,7 +289,7 @@ public class MusicPlayerService extends Service {
 
                     @Override
                     public void onNotificationPosted(int notificationId, Notification notification, boolean ongoing) {
-                    startForeground(notificationId, notification);
+                        startForeground(notificationId, notification);
                     }
                 })
                 .setPlayActionIconResourceId(R.drawable.ic_play)
@@ -278,13 +297,7 @@ public class MusicPlayerService extends Service {
                 .setPreviousActionIconResourceId(R.drawable.ic_track_seek_back)
                 .build();
 
-        songPlayer.addListener(new Player.Listener() {
-            @Override
-            public void onPlaybackStateChanged(int state) {
-                setMediaPlayerInfo(songPlayer.getCurrentWindowIndex());
-                UIUpdateFromServiceHandle.updateSeekBar();
-            }
-        });
+        //De
         songPlayer.setHandleAudioBecomingNoisy(true);
         songPlayer.setForegroundMode(true);
 
@@ -296,11 +309,14 @@ public class MusicPlayerService extends Service {
         playerNotificationManager.setUsePreviousActionInCompactView(true);
         playerNotificationManager.setMediaSessionToken(mediaSession.getSessionToken());
         playerNotificationManager.setPlayer(songPlayer);
+    }
 
+    @Override
+    public void onCreate() {
+        Toast.makeText(this,"The service is being reused",Toast.LENGTH_SHORT).show();
+        serviceFiller();
 
-
-
-       return START_STICKY;
+        super.onCreate();
     }
 
     /**
