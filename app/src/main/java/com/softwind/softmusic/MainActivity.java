@@ -181,7 +181,8 @@ public class MainActivity extends AppCompatActivity implements UIUpdateFromServi
 
         @Override
         public void onServiceDisconnected(ComponentName arg0) {
-
+            stopService();
+            onDestroy();
             mIsBound = false;
         }
     };
