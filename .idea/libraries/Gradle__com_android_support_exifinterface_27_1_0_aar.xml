@@ -2,9 +2,10 @@
   <library name="Gradle: com.android.support:exifinterface:27.1.0@aar">
     <CLASSES>
       <root url="file://$USER_HOME$/.gradle/caches/transforms-2/files-2.1/ec1012362b92f58178780c15d49016bb/exifinterface-27.1.0/res" />
-      <root url="jar://$USER_HOME$/.gradle/caches/transforms-3/7eda0a1942e6693c20bcb9d8ac3ce05e/transformed/exifinterface-27.1.0/jars/classes.jar!/" />
       <root url="file://$USER_HOME$/.gradle/caches/transforms-3/7eda0a1942e6693c20bcb9d8ac3ce05e/transformed/exifinterface-27.1.0/res" />
-      <root url="file://$USER_HOME$/.gradle/caches/transforms-3/7eda0a1942e6693c20bcb9d8ac3ce05e/transformed/exifinterface-27.1.0/AndroidManifest.xml" />
+      <root url="jar://$USER_HOME$/.gradle/caches/transforms-3/88cc24ad2c1fc6e58481e579a6c3a112/transformed/exifinterface-27.1.0/jars/classes.jar!/" />
+      <root url="file://$USER_HOME$/.gradle/caches/transforms-3/88cc24ad2c1fc6e58481e579a6c3a112/transformed/exifinterface-27.1.0/res" />
+      <root url="file://$USER_HOME$/.gradle/caches/transforms-3/88cc24ad2c1fc6e58481e579a6c3a112/transformed/exifinterface-27.1.0/AndroidManifest.xml" />
     </CLASSES>
     <JAVADOC />
     <SOURCES>
