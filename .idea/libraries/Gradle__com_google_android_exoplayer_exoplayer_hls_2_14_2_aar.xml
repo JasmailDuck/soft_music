@@ -1,14 +1,15 @@
 <component name="libraryTable">
   <library name="Gradle: com.google.android.exoplayer:exoplayer-hls:2.14.2@aar">
     <ANNOTATIONS>
-      <root url="jar://$USER_HOME$/.gradle/caches/transforms-3/e65fe96dd39f5f39651952c245331a47/transformed/exoplayer-hls-2.14.2/annotations.zip!/" />
+      <root url="jar://$USER_HOME$/.gradle/caches/transforms-3/55a47196e6279668769aa993e147c125/transformed/exoplayer-hls-2.14.2/annotations.zip!/" />
     </ANNOTATIONS>
     <CLASSES>
       <root url="file://$USER_HOME$/.gradle/caches/transforms-2/files-2.1/9cceaa25a59cfadb9fe3ca1505634f37/exoplayer-hls-2.14.2/res" />
       <root url="file://$USER_HOME$/.gradle/caches/transforms-3/3d84ea138e265f14967b153c3a0b267b/transformed/exoplayer-hls-2.14.2/res" />
       <root url="file://$USER_HOME$/.gradle/caches/transforms-3/e65fe96dd39f5f39651952c245331a47/transformed/exoplayer-hls-2.14.2/res" />
-      <root url="jar://$USER_HOME$/.gradle/caches/transforms-3/e65fe96dd39f5f39651952c245331a47/transformed/exoplayer-hls-2.14.2/jars/classes.jar!/" />
-      <root url="file://$USER_HOME$/.gradle/caches/transforms-3/e65fe96dd39f5f39651952c245331a47/transformed/exoplayer-hls-2.14.2/AndroidManifest.xml" />
+      <root url="jar://$USER_HOME$/.gradle/caches/transforms-3/55a47196e6279668769aa993e147c125/transformed/exoplayer-hls-2.14.2/jars/classes.jar!/" />
+      <root url="file://$USER_HOME$/.gradle/caches/transforms-3/55a47196e6279668769aa993e147c125/transformed/exoplayer-hls-2.14.2/AndroidManifest.xml" />
+      <root url="file://$USER_HOME$/.gradle/caches/transforms-3/55a47196e6279668769aa993e147c125/transformed/exoplayer-hls-2.14.2/res" />
     </CLASSES>
     <JAVADOC />
     <SOURCES>

@@ -3,9 +3,10 @@
     <CLASSES>
       <root url="file://$USER_HOME$/.gradle/caches/transforms-2/files-2.1/eaa76a5df9fdcbd8d29533fd05641649/exoplayer-smoothstreaming-2.14.2/res" />
       <root url="file://$USER_HOME$/.gradle/caches/transforms-3/a2b3770f6b0ec174cb1b98364b9d40b9/transformed/exoplayer-smoothstreaming-2.14.2/res" />
-      <root url="jar://$USER_HOME$/.gradle/caches/transforms-3/1291128d2352f5eeb72e187645068c56/transformed/exoplayer-smoothstreaming-2.14.2/jars/classes.jar!/" />
       <root url="file://$USER_HOME$/.gradle/caches/transforms-3/1291128d2352f5eeb72e187645068c56/transformed/exoplayer-smoothstreaming-2.14.2/res" />
-      <root url="file://$USER_HOME$/.gradle/caches/transforms-3/1291128d2352f5eeb72e187645068c56/transformed/exoplayer-smoothstreaming-2.14.2/AndroidManifest.xml" />
+      <root url="file://$USER_HOME$/.gradle/caches/transforms-3/e5ecb75e8d9ea6791247676eae9615a8/transformed/exoplayer-smoothstreaming-2.14.2/AndroidManifest.xml" />
+      <root url="jar://$USER_HOME$/.gradle/caches/transforms-3/e5ecb75e8d9ea6791247676eae9615a8/transformed/exoplayer-smoothstreaming-2.14.2/jars/classes.jar!/" />
+      <root url="file://$USER_HOME$/.gradle/caches/transforms-3/e5ecb75e8d9ea6791247676eae9615a8/transformed/exoplayer-smoothstreaming-2.14.2/res" />
     </CLASSES>
     <JAVADOC />
     <SOURCES>
