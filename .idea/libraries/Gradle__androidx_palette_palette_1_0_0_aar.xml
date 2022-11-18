@@ -3,9 +3,9 @@
     <CLASSES>
       <root url="file://$USER_HOME$/.gradle/caches/transforms-3/cd6d68b3c697b5e2b2e879a60ad2583d/transformed/palette-1.0.0/res" />
       <root url="file://$USER_HOME$/.gradle/caches/transforms-3/c866c52775821b867488e17e0f491e91/transformed/palette-1.0.0/res" />
-      <root url="jar://$USER_HOME$/.gradle/caches/transforms-3/d80edc797a57e684daf082cf16070667/transformed/palette-1.0.0/jars/classes.jar!/" />
       <root url="file://$USER_HOME$/.gradle/caches/transforms-3/d80edc797a57e684daf082cf16070667/transformed/palette-1.0.0/res" />
-      <root url="file://$USER_HOME$/.gradle/caches/transforms-3/d80edc797a57e684daf082cf16070667/transformed/palette-1.0.0/AndroidManifest.xml" />
+      <root url="jar://$USER_HOME$/.gradle/caches/transforms-3/884bf183dc015449525e608ef5c0100f/transformed/palette-1.0.0/jars/classes.jar!/" />
+      <root url="file://$USER_HOME$/.gradle/caches/transforms-3/884bf183dc015449525e608ef5c0100f/transformed/palette-1.0.0/AndroidManifest.xml" />
     </CLASSES>
     <JAVADOC />
     <SOURCES>

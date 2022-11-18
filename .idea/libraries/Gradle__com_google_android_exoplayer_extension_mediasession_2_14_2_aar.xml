@@ -1,12 +1,12 @@
 <component name="libraryTable">
   <library name="Gradle: com.google.android.exoplayer:extension-mediasession:2.14.2@aar">
     <ANNOTATIONS>
-      <root url="jar://$USER_HOME$/.gradle/caches/transforms-3/aa6c0046184e04b2c08a0111b08990a2/transformed/extension-mediasession-2.14.2/annotations.zip!/" />
+      <root url="jar://$USER_HOME$/.gradle/caches/transforms-3/4be8b3f417cef359e2fb7ddca445230e/transformed/extension-mediasession-2.14.2/annotations.zip!/" />
     </ANNOTATIONS>
     <CLASSES>
-      <root url="file://$USER_HOME$/.gradle/caches/transforms-3/aa6c0046184e04b2c08a0111b08990a2/transformed/extension-mediasession-2.14.2/res" />
-      <root url="jar://$USER_HOME$/.gradle/caches/transforms-3/aa6c0046184e04b2c08a0111b08990a2/transformed/extension-mediasession-2.14.2/jars/classes.jar!/" />
-      <root url="file://$USER_HOME$/.gradle/caches/transforms-3/aa6c0046184e04b2c08a0111b08990a2/transformed/extension-mediasession-2.14.2/AndroidManifest.xml" />
+      <root url="file://$USER_HOME$/.gradle/caches/transforms-3/4be8b3f417cef359e2fb7ddca445230e/transformed/extension-mediasession-2.14.2/res" />
+      <root url="jar://$USER_HOME$/.gradle/caches/transforms-3/4be8b3f417cef359e2fb7ddca445230e/transformed/extension-mediasession-2.14.2/jars/classes.jar!/" />
+      <root url="file://$USER_HOME$/.gradle/caches/transforms-3/4be8b3f417cef359e2fb7ddca445230e/transformed/extension-mediasession-2.14.2/AndroidManifest.xml" />
     </CLASSES>
     <JAVADOC />
     <SOURCES>
